@@ -9,6 +9,7 @@ import time
 from train_MNIST import Model, MODEL_PATH
 
 IMAGE_SIZE = 28
+image_path = '/home/kamerider/Machine Intelligent/MNIST_demo/test_data/1.png'
 
 def resize_image(frame, height = IMAGE_SIZE, width = IMAGE_SIZE):
     top, bottom, left, right = (0, 0, 0, 0)
@@ -49,7 +50,8 @@ if __name__ == '__main__':
         #set the color of bounding boxes
         color = (255,0,255)
 
-        image = cv2.imread(sys.argv[2])
+        image = cv2.imread(image_path)
+        print image
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image = resize_image(image)
         print 'the size of input image is: '

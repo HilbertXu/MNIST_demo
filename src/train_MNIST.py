@@ -20,6 +20,7 @@ from keras.layers.normalization import BatchNormalization
 from keras.utils import np_utils
 
 from keras.models import load_model
+from keras.optimizers import SGD
 from keras import backend as K
 
 batch_size =128
@@ -28,11 +29,11 @@ nb_epoch = 12
 IMAGE_SIZE = 28
 
 #卷积层使用卷积核的数目
-nb_filter = 32
+nb_filter = 6
 #池化层操作范围
 pool_size = (2,2)
 #卷积核大小
-kernel_size = (3,3)
+kernel_size = (5,5)
 
 MODEL_PATH = '../model/MNIST_demo.h5'
 HISTORY_PATH = '../History/Train_History.txt'
@@ -137,16 +138,17 @@ class Model:
         print dataset.input_shape
         print 'now we start to build our CNN  <(~︶~)>'
         #建立一个空的序贯式模型
-        #因为要拿CNN讲所以把原来的全连接模型改成了CNN网络
+        #因为要拿CNN讲所以把原来的全连接模型改成了LeNet-5网络
         self.model = Sequential()
+        
         self.model.add(Convolution2D(nb_filter, kernel_size[0], kernel_size[1], border_mode = 'valid', input_shape = dataset.input_shape))
-        self.model.add(Activation('relu'))
+        self.model.add(Activation('tanh'))
         #选用relu激活函数
         #f(x) = max(0, x)
         #即只要x大于0该网络层就会被激活
 
-        self.model.add(Convolution2D(nb_filter, kernel_size[0], kernel_size[1]))
-        self.model.add(Activation('relu'))
+        self.model.add(Convolution2D(16, 3, 3, border_mode = 'valid'))
+        self.model.add(Activation('tanh'))
 
         #self.model.add(BatchNormalization(epsilon=1e-06, mode=0, axis=-1, momentum=0.9,
         #                                    weights=None, beta_init='zero', gamma_init='one'))
@@ -161,8 +163,8 @@ class Model:
         self.model.add(Flatten())
 
         #全连接层
-        self.model.add(Dense(128))
-        self.model.add(Activation('relu'))
+        self.model.add(Dense(120, activation='tanh'))
+        self.model.add(Dense(84, activation='tanh'))
         self.model.add(Dropout(0.5))
 
         #输出层，激活函数为‘softmax’
@@ -195,8 +197,11 @@ class Model:
 
     def train(self, dataset, batch_size = batch_size, nb_epoch = nb_epoch,
               data_augmentation = False):
+        sgd = SGD(lr = 0.05, decay = 1e-6,
+                momentum = 0.9, nesterov = True) #采用SGD+momentum的优化器进行训练，首先生成一个优化器对象
         self.model.compile(loss='categorical_crossentropy',
-                           optimizer='rmsprop',
+                           optimizer='rmsprop',#优化器可以选择rmsprop也可以选择自己生成的SGD优化器
+                           #optimizer='sgd',    #如果使用SGD都能跑地效果很好那说明网络已经搭建地很好了~
                            metrics=['accuracy'])
         #不使用数据提升，所谓的提升就是从我们提供的训练数据中利用旋转、翻转、加噪声等方法
         #创造新的训练数据，有意识的提升训练数据规模，增加模型训练量
